@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, ShuffleSplit
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 # from sklearn.model_selection import GridSearchCV
@@ -114,6 +114,16 @@ random_forest.fit(X=X_train, y=y_train)
 
 rf_train_pred = random_forest.predict(X=X_train)
 rf_test_pred = random_forest.predict(X=X_test)
+
+
+"""do the KFold cross-validation both with MAE values and r2 scores criteria"""
+cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=0)
+mae_values = cross_val_score(estimator=random_forest, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
+r2_scores = cross_val_score(estimator=random_forest, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
+print("the average MAE values (bias) is:", mae_values.mean())
+print("the std deviation of MAE values (variance) is:", mae_values.std())
+print("the average r2 scores (bias) is:", r2_scores.mean())
+print("the std deviation of r2 scores (variance) is:", r2_scores.std())
 
 
 """print the RF model results"""
