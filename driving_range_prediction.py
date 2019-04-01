@@ -101,25 +101,23 @@ X_test = sc.fit_transform(X=X_test)
 
 
 """define the multi-layer perceptron model"""
-mlp = MLPRegressor(hidden_layer_sizes=(20, 11, 11, 7, 7, 3, 3,), max_iter=4000, n_iter_no_change=30,
-                   activation='relu', solver='adam', verbose=False, warm_start=False)
+# mlp = MLPRegressor(hidden_layer_sizes=(20, 11, 11, 7, 7, 3, 3,), max_iter=4000, n_iter_no_change=30,
+#                    activation='relu', solver='adam', verbose=False, warm_start=False)
 
 
 """do the KFold cross-validation both with MAE values and r2 scores criteria"""
-cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=2)
-mae_values = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
-r2_scores = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
-print("\n ------ MLP ------")
-print(mae_values)
-print("average MAE values (bias) is:", abs(round(number=mae_values.mean(), ndigits=3)))
-print("std deviation of MAE values (variance) is:", round(number=mae_values.std(), ndigits=3))
-best_mae = sorted(mae_values, reverse=False)[-1]
-print("best MAE value is:", abs(round(number=best_mae, ndigits=3)))
-
-print("average r2 scores (bias) is:", round(number=r2_scores.mean() * 100, ndigits=3))
-print("std deviation of r2 scores (variance) is:", round(number=r2_scores.std() * 100, ndigits=3))
-best_r2 = sorted(r2_scores, reverse=False)[-1] * 100
-print("best r2 score is:", round(number=best_r2, ndigits=3))
+# cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=2)
+# mae_values = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
+# r2_scores = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
+# print("\n ------ MLP ------")
+# print("average MAE values (bias) is:", abs(round(number=mae_values.mean(), ndigits=3)))
+# print("std deviation of MAE values (variance) is:", round(number=mae_values.std(), ndigits=3))
+# best_mae = sorted(mae_values, reverse=False)[-1]
+# print("best MAE value is:", abs(round(number=best_mae, ndigits=3)))
+# print("average r2 scores (bias) is:", round(number=r2_scores.mean() * 100, ndigits=3))
+# print("std deviation of r2 scores (variance) is:", round(number=r2_scores.std() * 100, ndigits=3))
+# best_r2 = sorted(r2_scores, reverse=False)[-1] * 100
+# print("best r2 score is:", round(number=best_r2, ndigits=3))
 
 
 """train the MLP model and print the results on the never-seen-before test data"""
@@ -137,26 +135,29 @@ print("best r2 score is:", round(number=best_r2, ndigits=3))
 # print("-------------------------------")
 
 
-"""train the random forest ensemble model"""
+"""define the random forest ensemble model"""
 # random_forest = RandomForestRegressor(n_estimators=200, criterion="mae", warm_start=False)
-# random_forest.fit(X=X_train, y=y_train)
-#
-# rf_train_pred = random_forest.predict(X=X_train)
-# rf_test_pred = random_forest.predict(X=X_test)
 
 
-# """do the KFold cross-validation both with MAE values and r2 scores criteria"""
-# cv = ShuffleSplit(n_splits=5, test_size=0.5, random_state=0)
+"""do the KFold cross-validation both with MAE values and r2 scores criteria"""
+# cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=2)
 # mae_values = cross_val_score(estimator=random_forest, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
 # r2_scores = cross_val_score(estimator=random_forest, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
-# print("the average MAE values (bias) is:", mae_values.mean())
-# print("the std deviation of MAE values (variance) is:", mae_values.std())
-# print("the average r2 scores (bias) is:", r2_scores.mean())
-# print("the std deviation of r2 scores (variance) is:", r2_scores.std())
+# print("\n ------ Random Forest ------")
+# print("average MAE values (bias) is:", abs(round(number=mae_values.mean(), ndigits=3)))
+# print("std deviation of MAE values (variance) is:", round(number=mae_values.std(), ndigits=3))
+# best_mae = sorted(mae_values, reverse=False)[-1]
+# print("best MAE value is:", abs(round(number=best_mae, ndigits=3)))
+# print("average r2 scores (bias) is:", round(number=r2_scores.mean() * 100, ndigits=3))
+# print("std deviation of r2 scores (variance) is:", round(number=r2_scores.std() * 100, ndigits=3))
+# best_r2 = sorted(r2_scores, reverse=False)[-1] * 100
+# print("best r2 score is:", round(number=best_r2, ndigits=3))
 
 
-# """print the RF model results"""
-# print("-------------------------------")
+"""train the RF model and print the results on the never-seen-before test data"""
+# random_forest.fit(X=X_train, y=y_train)
+# rf_train_pred = random_forest.predict(X=X_train)
+# rf_test_pred = random_forest.predict(X=X_test)
 # # print("rf RMSE on training data: %.3f" % sqrt(mean_squared_error(y_true=y_train, y_pred=rf_train_pred)))
 # # print("rf RMSE on test data: %.3f" % sqrt(mean_squared_error(y_true=y_test, y_pred=rf_test_pred)))
 # print("-------------")
@@ -168,16 +169,29 @@ print("best r2 score is:", round(number=best_r2, ndigits=3))
 # print("-------------------------------")
 
 
-# """train the ada-boost ensemble model"""
-# ada_boost = AdaBoostRegressor(n_estimators=350, learning_rate=1.)
+"""define the ada-boost ensemble model"""
+# ada_boost = AdaBoostRegressor(n_estimators=50, learning_rate=1.)
+
+
+"""do the KFold cross-validation both with MAE values and r2 scores criteria"""
+# cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=2)
+# mae_values = cross_val_score(estimator=ada_boost, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
+# r2_scores = cross_val_score(estimator=ada_boost, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
+# print("\n ------ Adaboost ------")
+# print("average MAE values (bias) is:", abs(round(number=mae_values.mean(), ndigits=3)))
+# print("std deviation of MAE values (variance) is:", round(number=mae_values.std(), ndigits=3))
+# best_mae = sorted(mae_values, reverse=False)[-1]
+# print("best MAE value is:", abs(round(number=best_mae, ndigits=3)))
+# print("average r2 scores (bias) is:", round(number=r2_scores.mean() * 100, ndigits=3))
+# print("std deviation of r2 scores (variance) is:", round(number=r2_scores.std() * 100, ndigits=3))
+# best_r2 = sorted(r2_scores, reverse=False)[-1] * 100
+# print("best r2 score is:", round(number=best_r2, ndigits=3))
+
+
+"""train the ada-boost model and print the results on the never-seen-before test data"""
 # ada_boost.fit(X=X_train, y=y_train)
-#
 # ab_train_pred = ada_boost.predict(X=X_train)
 # ab_test_pred = ada_boost.predict(X=X_test)
-#
-#
-# """print this model results"""
-# print("-------------------------------")
 # # print("ada-boost RMSE on training data: %.3f" % sqrt(mean_squared_error(y_true=y_train, y_pred=ab_train_pred)))
 # # print("ada-boost RMSE on test data: %.3f" % sqrt(mean_squared_error(y_true=y_test, y_pred=ab_test_pred)))
 # print("-------------")
@@ -187,8 +201,8 @@ print("best r2 score is:", round(number=best_r2, ndigits=3))
 # print("ada-boost variance score on training data: %.3f" % r2_score(y_true=y_train, y_pred=ab_train_pred))
 # print("ada-boost variance score on test data: %.3f" % r2_score(y_true=y_test, y_pred=ab_test_pred))
 # print("-------------------------------")
-#
-#
+
+
 # """plot driving range based on the battery quantity"""
 # quantity = X[:, 2]
 # distance = y
@@ -207,8 +221,8 @@ print("best r2 score is:", round(number=best_r2, ndigits=3))
 # plt.title(label='Linear Regression Plot')
 # plt.xlabel(xlabel='quantity (kWh)'), plt.ylabel(ylabel='driving range (km)')
 # plt.show()
-#
-#
+
+
 # """plot driving range based on the average speed"""
 # avg_speed = X[:, 9]
 # avg_speed = np.reshape(avg_speed, newshape=(-1, 1))
