@@ -10,6 +10,7 @@ from sklearn.neural_network import MLPRegressor
 # from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
+import time
 
 
 warnings.filterwarnings(action="ignore")
@@ -55,7 +56,7 @@ X = onehot_encoder.fit_transform(X=X).toarray()
 X = X[:, 1:]
 
 # split the dataset into training-set and test-set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 # scale the features
 sc = StandardScaler()
@@ -101,14 +102,16 @@ X_test = sc.fit_transform(X=X_test)
 
 
 """define the multi-layer perceptron model"""
-# mlp = MLPRegressor(hidden_layer_sizes=(20, 11, 11, 7, 7, 3, 3,), max_iter=4000, n_iter_no_change=30,
-#                    activation='relu', solver='adam', verbose=False, warm_start=False)
+# mlp = MLPRegressor(hidden_layer_sizes=(20, 10,), max_iter=500, n_iter_no_change=10,
+#                    activation='relu', solver='adam', verbose=True, warm_start=False)
 
 
 """do the KFold cross-validation both with MAE values and r2 scores criteria"""
-# cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=2)
-# mae_values = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=2)
-# r2_scores = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='r2', n_jobs=2)
+# cv = ShuffleSplit(n_splits=10, test_size=0.2, random_state=2)
+# mae_values = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='neg_mean_absolute_error', n_jobs=1)
+#
+# print(mae_values)
+# r2_scores = cross_val_score(estimator=mlp, X=X, y=y, cv=cv, scoring='r2', n_jobs=1)
 # print("\n ------ MLP ------")
 # print("average MAE values (bias) is:", abs(round(number=mae_values.mean(), ndigits=3)))
 # print("std deviation of MAE values (variance) is:", round(number=mae_values.std(), ndigits=3))
@@ -121,7 +124,10 @@ X_test = sc.fit_transform(X=X_test)
 
 
 """train the MLP model and print the results on the never-seen-before test data"""
+# t0 = time.time()
 # mlp.fit(X=X_train, y=y_train)
+# t1 = time.time()
+# print("elapsed time:", round(t1-t0, ndigits=2), "secs")
 # mlp_training_pred = mlp.predict(X=X_train)
 # mlp_test_pred = mlp.predict(X=X_test)
 # # print("mlp RMSE on training data: %.3f" % sqrt(mean_squared_error(y_true=y_train, y_pred=mlp_training_pred)))
@@ -240,3 +246,39 @@ X_test = sc.fit_transform(X=X_test)
 # plt.xlabel(xlabel='average speed (km/h)'), plt.ylabel(ylabel='driving range (km)')
 # plt.xlim(-5, 110), plt.ylim(-30, 650)
 # plt.show()
+
+
+import keras
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasRegressor
+
+
+class LossHistory(keras.callbacks.Callback):
+    losses = list()
+
+    def on_epoch_end(self, epoch, logs={}):
+        if epoch == num_total_epochs - 1:
+            self.losses.append(logs.get('loss'))
+
+
+def build_regressor():
+    regressor = keras.models.Sequential()
+    regressor.add(Dense(units=100, kernel_initializer='uniform', activation='relu', input_dim=10))
+    regressor.add(Dense(units=50, kernel_initializer='uniform', activation='relu'))
+    regressor.add(Dense(units=25, kernel_initializer='uniform', activation='relu'))
+    regressor.add(Dense(units=13, kernel_initializer='uniform', activation='relu'))
+    regressor.add(Dense(units=7, kernel_initializer='uniform', activation='relu'))
+    regressor.add(Dense(units=1, kernel_initializer='uniform', activation='relu'))
+    regressor.compile(optimizer='adam', loss='mean_absolute_error')
+    return regressor
+
+
+num_total_epochs = 1000
+hist = LossHistory()
+
+deep_mlp = KerasRegressor(build_fn=build_regressor, batch_size=16, epochs=num_total_epochs, verbose=True)
+cv = ShuffleSplit(n_splits=10, test_size=0.5, random_state=0)
+_ = cross_val_score(estimator=deep_mlp, X=X, y=y, cv=cv, n_jobs=1, fit_params={'callbacks': [hist]})
+mae_scores = list(map(lambda x: round(x, ndigits=3), hist.losses))
+print(mae_scores)
+
