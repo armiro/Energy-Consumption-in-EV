@@ -2,21 +2,38 @@ import warnings
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
-from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, ShuffleSplit
+from sklearn.model_selection import train_test_split, cross_val_score, ShuffleSplit, GridSearchCV
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
+import keras
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
 
 
-def do_kfold(k, test_size, classifier):
-    cv = ShuffleSplit(n_splits=k, test_size=test_size, random_state=41)
-    acc_scores = cross_val_score(estimator=classifier, X=X, y=y, scoring='balanced_accuracy', n_jobs=2, cv=cv)
+def do_kfold(model):
+    cv = ShuffleSplit(n_splits=10, test_size=0.25, random_state=41)
+    acc_scores = cross_val_score(estimator=model, X=X, y=y, scoring='balanced_accuracy', n_jobs=-1, cv=cv)
     print('accuracy scores:', acc_scores)
     print("average accuracy score (bias) is:", abs(round(number=acc_scores.mean() * 100, ndigits=3)))
     print("std deviation of MAE scores (variance) is:", round(number=acc_scores.std() * 100, ndigits=3))
     best_acc = sorted(acc_scores, reverse=False)[-1]
     print("best accuracy score is:", abs(round(number=best_acc * 100, ndigits=3)))
+    print("-------------------------------")
+
+
+def do_train_test(model):
+    model.fit(X_train, y_train)
+    training_pred = model.predict(X_train)
+    test_pred = model.predict(X_test)
+    training_acc = accuracy_score(y_true=y_train, y_pred=training_pred)
+    test_acc = accuracy_score(y_true=y_test, y_pred=test_pred)
+    print("accuracy on training-set:", training_acc)
+    print("accuracy on test-set:", test_acc)
+    cm = confusion_matrix(y_true=y_test, y_pred=test_pred)
+    print("confusion matrix on test-set:", cm)
+    print("-------------------------------")
 
 
 warnings.filterwarnings(action="ignore")
@@ -86,71 +103,53 @@ print(clf.best_params_)
 """define the SVM classification model with best parameters obtained from above"""
 svm_classifier = svm.SVC(C=1000, kernel='rbf', gamma=0.12)
 
-
 """KFold cross-validation"""
-print("\n ------ SVM ------")
-do_kfold(k=10, test_size=0.25, classifier=svm_classifier)
-
+print("\n ------ SVM CrossVal ------")
+do_kfold(model=svm_classifier)
 
 """evaluate on the never-seen-before test data"""
-svm_classifier.fit(X=X_train, y=y_train)
-svm_training_pred = svm_classifier.predict(X=X_train)
-svm_test_pred = svm_classifier.predict(X=X_test)
-
-svm_training_acc = accuracy_score(y_true=y_train, y_pred=svm_training_pred)
-svm_test_acc = accuracy_score(y_true=y_test, y_pred=svm_test_pred)
-
-print("SVM accuracy on training-set:", svm_training_acc)
-print("SVM accuracy on test-set:", svm_test_acc)
-
-svm_cm = confusion_matrix(y_true=y_test, y_pred=svm_test_pred)
-print("SVM confusion matrix on test-set:", svm_cm)
+print("\n ------ SVM TrainTest ------")
+do_train_test(model=svm_classifier)
 
 
 """define the MLP as the classifier"""
-mlp_classifier = MLPClassifier(hidden_layer_sizes=(100, 50,), activation='relu', solver='adam',
-                               verbose=False, max_iter=1000, n_iter_no_change=100, warm_start=True)
+mlp_classifier = MLPClassifier(hidden_layer_sizes=(10,), activation='relu', solver='adam',
+                               verbose=False, max_iter=1000, n_iter_no_change=100, warm_start=False)
 
+print("\n ------ MLP Classifier CrossVal ------")
+do_kfold(model=mlp_classifier)
 
-"""KFold cross-validation"""
-print("\n ------ MLP Classifier ------")
-do_kfold(k=10, test_size=0.25, classifier=mlp_classifier)
-
-
-"""evaluate on the never-seen-before test data"""
-mlp_classifier.fit(X=X_train, y=y_train)
-mlp_training_pred = mlp_classifier.predict(X=X_train)
-mlp_test_pred = mlp_classifier.predict(X=X_test)
-
-mlp_training_acc = accuracy_score(y_true=y_train, y_pred=mlp_training_pred)
-mlp_test_acc = accuracy_score(y_true=y_test, y_pred=mlp_test_pred)
-
-print("MLP accuracy on training-set:", mlp_training_acc)
-print("MLP accuracy on test-set:", mlp_test_acc)
-
-mlp_cm = confusion_matrix(y_true=y_test, y_pred=mlp_test_pred)
-print("MLP confusion matrix on test-set:", mlp_cm)
+print("\n ------ MLP Classifier TrainTest ------")
+do_train_test(model=mlp_classifier)
 
 
 """define the RF as the classifier"""
 rf_classifier = RandomForestClassifier(n_estimators=50)
 
+print("\n ------ Random Forest Classifier CrossVal ------")
+do_kfold(model=rf_classifier)
 
-"""KFold cross-validation"""
-print("\n ------ Random Forest Classifier ------")
-do_kfold(k=10, test_size=0.25, classifier=rf_classifier)
+print("\n ------ Random Forest Classifier TrainTest ------")
+do_train_test(model=rf_classifier)
 
 
-"""evaluate on the never-seen-before test data"""
-rf_classifier.fit(X=X_train, y=y_train)
-rf_training_pred = rf_classifier.predict(X=X_train)
-rf_test_pred = rf_classifier.predict(X=X_test)
+"""define the deep mlp as the classifier"""
+def build_classifier():
+    classifier = keras.models.Sequential()
+    classifier.add(Dense(units=100, kernel_initializer='uniform', activation='relu', input_dim=len(X[0])))
+    classifier.add(Dense(units=50, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=25, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=13, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=7, kernel_initializer='uniform', activation='relu'))
+    classifier.add(Dense(units=1, kernel_initializer='uniform', activation='sigmoid'))
+    classifier.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return classifier
 
-rf_training_acc = accuracy_score(y_true=y_train, y_pred=rf_training_pred)
-rf_test_acc = accuracy_score(y_true=y_test, y_pred=rf_test_pred)
 
-print("RF accuracy on training-set:", rf_training_acc)
-print("RF accuracy on test-set:", rf_test_acc)
+deep_mlp_classifier = KerasClassifier(build_fn=build_classifier, batch_size=16, epochs=1000, verbose=False)
 
-rf_cm = confusion_matrix(y_true=y_test, y_pred=rf_test_pred)
-print("RF confusion matrix on test-set:", rf_cm)
+print("\n ------ Deep MLP Classifier CrossVal ------")
+do_kfold(model=deep_mlp_classifier)
+
+print("\n ------ Deep MLP Classifier TrainTest ------")
+do_train_test(model=deep_mlp_classifier)
