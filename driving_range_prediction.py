@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor
-from sklearn.model_selection import train_test_split, ShuffleSplit, cross_validate, GridSearchCV
+from sklearn.model_selection import train_test_split, ShuffleSplit, cross_validate
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 import keras
@@ -60,10 +60,10 @@ new_path = "./data files/new_data.csv"
 
 
 """remove missing values (comment it after the first run)"""
-# ds = pd.read_csv(filepath_or_buffer=old_path)
-# ds = ds[pd.notnull(obj=ds['quantity(kWh)'])]
-# ds = ds[pd.notnull(obj=ds['avg_speed(km/h)'])]
-# ds.to_csv(path_or_buf=new_path)
+ds = pd.read_csv(filepath_or_buffer=old_path)
+ds = ds[pd.notnull(obj=ds['quantity(kWh)'])]
+ds = ds[pd.notnull(obj=ds['avg_speed(km/h)'])]
+ds.to_csv(path_or_buf=new_path)
 
 
 """load the data"""
@@ -200,13 +200,14 @@ q_slope = quantity_linear_reg.coef_[0]
 q_intercept = quantity_linear_reg.intercept_
 q_predicted_distances = q_intercept + q_slope * quantity
 
+fig = plt.figure()
 plt.scatter(x=quantity, y=distance, s=15, c='black', linewidths=0.1)
 plt.plot(quantity, q_predicted_distances, c='red', linewidth=2)
 plt.legend(('fitted line', 'data records'), loc='lower right')
 plt.title(label='Linear Regression Plot')
 plt.xlabel(xlabel='quantity (kWh)'), plt.ylabel(ylabel='driving range (km)')
 plt.show()
-# plt.savefig(fname='range_to_quantity.png')
+# fig.savefig('range_to_quantity.png')
 
 
 """plot driving range based on the average speed"""
@@ -219,6 +220,7 @@ s_slope = speed_linear_reg.coef_[0]
 s_intercept = speed_linear_reg.intercept_
 s_predicted_distances = s_intercept + s_slope * quantity
 
+fig = plt.figure()
 plt.scatter(x=avg_speed, y=distance, s=15, c='orange', linewidths=0.1)
 plt.plot(quantity, s_predicted_distances, c='blue', linewidth=2)
 plt.legend(('fitted line', 'data records'), loc='upper left')
@@ -226,4 +228,4 @@ plt.title(label='Linear Regression Plot')
 plt.xlabel(xlabel='average speed (km/h)'), plt.ylabel(ylabel='driving range (km)')
 plt.xlim(-5, 110), plt.ylim(-30, 650)
 plt.show()
-# plt.savefig(fname='range_to_speed.png')
+# fig.savefig('range_to_speed.png')
