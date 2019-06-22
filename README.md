@@ -10,10 +10,12 @@ is predicted via input features, such as driving_style, avg_speed and route_type
 2) Multilayer Perceptron (MLP)
 3) Random Forest
 4) AdaBoost
+5) Deep Multilayer Perceptron (Deep MLP)
 * Classifiers:
 1) Support Vector Machines (SVM)
 2) Multilayer Perceptron (MLP)
 3) Random Forest
+4) Deep Multilayer Perceptron (Deep MLP)
 
 ### Input data
 Dataset crawler (```vehicle_crawler.py```) and 
