@@ -1,5 +1,5 @@
 ![Status: Final](https://img.shields.io/badge/Status-Final-yellowgreen.svg)
-[![license](https://img.shields.io/badge/DOI-10.1109/ICSPIS48872.2019.9066042-3498db)](https://ieeexplore.ieee.org/abstract/document/9066042)
+[![doi](https://img.shields.io/badge/DOI-10.1109/ICSPIS48872.2019.9066042-3498db)](https://ieeexplore.ieee.org/abstract/document/9066042)
 
 # Driving Range Estimation and Energy Consumption Rate Deviation Classification in Electric Vehicles using Machine Learning Methods
 
